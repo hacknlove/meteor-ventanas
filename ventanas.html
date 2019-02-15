@@ -1,0 +1,13 @@
+<body lang="es">
+  {{> _ventanas}}
+</body>
+<template name="_ventanas">
+  <div id="ventanas">
+    {{# each m in ventanas}}
+      {{> _ventana m}}
+    {{/each}}
+  </div>
+</template>
+<template name="_ventana">
+  {{> Template.dynamic template=template data=this}}
+</template>
