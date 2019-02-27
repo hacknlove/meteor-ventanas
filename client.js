@@ -148,6 +148,15 @@ Template._ventanas.onCreated(function () {
 
 Template._ventanas.helpers({
   ventanas () {
+    if (ventanas.findOne({
+      _id: 'waiting',
+      exclusive: 1
+    })) {
+      return [ventanas.findOne({
+        _id: 'waiting',
+        exclusive: 1
+      })]
+    }
     return ventanas.find({
       _id: {
         $ne: 'c'
