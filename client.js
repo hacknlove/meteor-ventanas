@@ -223,9 +223,9 @@ Template._ventana.onRendered(function () {
       _id: that.data._id,
       waiting: 1
     })) {
-      that.$('form').addClass('waiting')
+      that.$('.ventana').addClass('waiting')
     } else {
-      that.$('form').removeClass('waiting')
+      that.$('.ventana').removeClass('waiting')
     }
   })
 })

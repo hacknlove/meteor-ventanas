@@ -25,7 +25,7 @@ ecmascript-runtime-server@0.7.1
 ejson@1.1.0
 fetch@0.1.0
 geojson-utils@1.0.10
-hacknlove:ventanas@0.0.1
+hacknlove:ventanas@0.0.2
 html-tools@1.0.11
 htmljs@1.0.11
 id-map@1.1.0
