@@ -11,11 +11,14 @@ import { readUrl, createUrl } from './common.js'
 
 export const ventanas = new Mongo.Collection(null)
 
+ventanas.timeout = 350
+
 /**
  * @function ventanas.updateUrl
  * it updates the url with a base64 bencoded array that contains all the ventanas' documents except of those with noUrl
  * @return {undefined}
  */
+
 ventanas.updateUrl = _.debounce(function () {
   const url = createUrl(ventanas.find({
     nourl: {
@@ -51,7 +54,7 @@ ventanas.close = function (template, callback) {
       _id
     })
     callback && typeof callback !== 'number' && callback()
-  }, 350)
+  }, ventanas.timeout)
 }
 
 /**
@@ -128,7 +131,7 @@ Template._ventanas.onCreated(function () {
     Object.keys(event.currentTarget.dataset).forEach(function (key) {
       ventana[key] = event.currentTarget.dataset[key]
     })
-    ventana.updateUrl = true
+    ventana.updateUrl = 1
     console.log(ventana)
     if (ventana._id && ventanas.findOne({
       _id: ventana._id
@@ -148,6 +151,7 @@ Template._ventanas.onCreated(function () {
 
 Template._ventanas.helpers({
   ventanas () {
+    const $in = Object.keys(Template)
     if (ventanas.findOne({
       _id: 'waiting',
       exclusive: 1
@@ -160,7 +164,15 @@ Template._ventanas.helpers({
     return ventanas.find({
       _id: {
         $ne: 'c'
-      }
+      },
+      $or: [
+        {
+          _id: { $in }
+        },
+        {
+          template: { $in }
+        }
+      ]
     })
   }
 })
@@ -262,10 +274,19 @@ Template.registerHelper('c', function (k) {
   }) || {})[k]
 })
 ventanas.conf = function (a, b) {
+  if (a === undefined) {
+    return ventanas.findOne('c')
+  }
   if (b === undefined) {
-    return (ventanas.findOne({
-      _id: 'c'
+    return (ventanas.findOne('c', {
+      fields: {
+        [a]: 1
+      }
     }) || {})[a]
+  }
+  const old = ventanas.conf(a)
+  if (old === b) {
+    return
   }
   ventanas.upsert({
     _id: 'c'
@@ -274,6 +295,7 @@ ventanas.conf = function (a, b) {
       [a]: b
     }
   })
+  ventanas.updateUrl()
 }
 if (Meteor.isDevelopment) {
   global.ventanas = ventanas
