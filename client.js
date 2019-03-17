@@ -13,6 +13,9 @@ export const ventanas = new Mongo.Collection(null)
 
 ventanas.timeout = 350
 
+ventanas.readUrl = readUrl
+ventanas.createUrl = createUrl
+
 /**
  * @function ventanas.updateUrl
  * it updates the url with a base64 bencoded array that contains all the ventanas' documents except of those with noUrl
