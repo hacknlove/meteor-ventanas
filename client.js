@@ -156,13 +156,11 @@ Template._ventanas.helpers({
   ventanas () {
     const $in = Object.keys(Template)
     if (ventanas.findOne({
-      _id: 'waiting',
       exclusive: 1
     })) {
-      return [ventanas.findOne({
-        _id: 'waiting',
+      return ventanas.find({
         exclusive: 1
-      })]
+      })
     }
     return ventanas.find({
       _id: {
@@ -254,13 +252,13 @@ Template._ventana.events({
   }
 })
 
-ventanas.error = function (e) {
-  ventanas.insert({
+ventanas.error = function (e, opciones) {
+  ventanas.insert(Object.assign({
     template: 'alerta',
     clase: 'error',
     titulo: 'Error:',
     contenido: e.reason || e.message
-  })
+  }, opciones))
 }
 
 export const lang = function lang () {
