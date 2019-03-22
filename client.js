@@ -116,7 +116,7 @@ Meteor.startup(function () {
 
 const initUrl = function () {
   try {
-    readUrl(global.location.search).forEach(function (ventana) {
+    readUrl(global.location.search.substr(1), ventanas).forEach(function (ventana) {
       if (ventana.wait) {
         ventana.waiting = 1
       }
@@ -171,10 +171,14 @@ Template._ventanas.helpers({
   ventanas () {
     const $in = Object.keys(Template)
     if (ventanas.findOne({
-      exclusive: 1
+      exclusive: {
+        $in: [1, '1']
+      }
     })) {
       return ventanas.find({
-        exclusive: 1
+        exclusive: {
+          $in: [1, '1']
+        }
       })
     }
     return ventanas.find({

@@ -9,7 +9,8 @@ Package.describe({
 })
 Npm.depends({
   'jsonwebtoken': '8.5.1',
-  'url-pattern': '1.0.3'
+  'url-pattern': '1.0.3',
+  'qs': '6.5.0'
 })
 Package.onUse(function (api) {
   api.versionsFrom('1.8.0.2')

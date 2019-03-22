@@ -12,7 +12,16 @@ export const ventanas = {
     ])
   },
   createUrl,
-  limpiarUrl
+  limpiarUrl,
+  options: {
+    query: 'v',
+    timeout: 350,
+    debounce: 500,
+    jwt: {
+      algorithm: 'none',
+      key: undefined
+    }
+  }
 }
 
 onPageLoad(sink => {
@@ -29,6 +38,5 @@ onPageLoad(sink => {
   if (!match) {
     return
   }
-  const ventanas = readUrl(sink.request.url.path)
-  callback(sink, match, ventanas)
+  callback(sink, match, readUrl(sink.request.url.path, ventanas))
 })
