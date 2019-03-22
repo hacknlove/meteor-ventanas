@@ -11,7 +11,15 @@ import { readUrl, createUrl } from './common.js'
 
 export const ventanas = new Mongo.Collection(null)
 
-ventanas.timeout = 350
+ventanas.options = {
+  query: 'v',
+  timeout: 350,
+  debounce: 500,
+  jwt: {
+    algorithm: 'none',
+    key: undefined
+  }
+}
 
 ventanas.readUrl = readUrl
 ventanas.createUrl = createUrl
@@ -21,19 +29,25 @@ ventanas.createUrl = createUrl
  * it updates the url with a base64 bencoded array that contains all the ventanas' documents except of those with noUrl
  * @return {undefined}
  */
-
-ventanas.updateUrl = _.debounce(function () {
-  const url = createUrl(ventanas.find({
-    nourl: {
-      $exists: 0
+ventanas._updateUrl = function (path) {
+  path = path || (ventanas.findOne('c', {
+    fields: {
+      path: 1
     }
-  }).fetch())
-  if (url === 'bGU') {
-    global.history.pushState({}, '', '/')
-  } else {
-    global.history.pushState({}, '', `/_/${url}`)
-  }
-}, 1000)
+  }) || {}).path
+
+  global.history.pushState({
+    ventanas: ventanas.find({
+      noHistory: {
+        $exists: 0
+      }
+    }).fetch()
+  }, '', path)
+}
+ventanas.updateUrl = ventanas._updateUrl
+Meteor.startup(function () {
+  ventanas.updateUrl = _.debounce(ventanas._updateUrl, ventanas.options.debounce)
+})
 
 /**
  * @function ventanas.close
@@ -57,7 +71,7 @@ ventanas.close = function (template, callback) {
       _id
     })
     callback && typeof callback !== 'number' && callback()
-  }, ventanas.timeout)
+  }, ventanas.options.timeout)
 }
 
 /**
@@ -102,12 +116,13 @@ Meteor.startup(function () {
 
 const initUrl = function () {
   try {
-    readUrl(global.location.pathname).forEach(function (ventana) {
+    readUrl(global.location.search).forEach(function (ventana) {
       if (ventana.wait) {
         ventana.waiting = 1
       }
       ventanas.insert(ventana)
     })
+    ventanas.updateUrl()
   } catch (e) {
     console.log(e)
   }
@@ -303,7 +318,8 @@ if (Meteor.isDevelopment) {
 }
 
 window.onpopstate = function (event) {
-  const nuevasVentanas = readUrl(global.location.pathname)
+  console.log(event)
+  const nuevasVentanas = event.state.ventanas
 
   nuevasVentanas.forEach(function (ventana) {
     if (ventana.wait) {
@@ -325,7 +341,7 @@ window.onpopstate = function (event) {
   })
 
   ventanas.remove({
-    nourl: {
+    noHistory: {
       $exists: 0
     },
     onpopstate: {
