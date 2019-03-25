@@ -11,8 +11,15 @@ export const ventanas = {
       callback
     ])
   },
-  createUrl,
-  limpiarUrl,
+  createUrl (payload) {
+    return createUrl(payload, ventanas)
+  },
+  limpiarUrl (payload) {
+    return limpiarUrl(payload, ventanas)
+  },
+  readUrl (payload) {
+    return readUrl(payload, ventanas)
+  },
   options: {
     query: 'v',
     timeout: 350,
@@ -38,5 +45,5 @@ onPageLoad(sink => {
   if (!match) {
     return
   }
-  callback(sink, match, readUrl(sink.request.url.path, ventanas))
+  callback(sink, match, ventanas.readUrl(sink.request.url.path))
 })

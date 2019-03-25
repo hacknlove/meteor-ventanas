@@ -21,9 +21,13 @@ ventanas.options = {
   }
 }
 
-ventanas.readUrl = readUrl
-ventanas.createUrl = createUrl
+ventanas.readUrl = function (payload) {
+  return readUrl(payload, ventanas)
+}
 
+ventanas.createUrl = function (payload) {
+  return createUrl(payload, ventanas)
+}
 /**
  * @function ventanas.updateUrl
  * it updates the url with a base64 bencoded array that contains all the ventanas' documents except of those with noUrl
@@ -115,8 +119,18 @@ Meteor.startup(function () {
 })
 
 const initUrl = function () {
+  var urlVentanas = []
   try {
-    readUrl(global.location.search.substr(1), ventanas).forEach(function (ventana) {
+    urlVentanas = ventanas.readUrl(global.location.search.substr(1))
+  } catch (e) {
+    console.log(e)
+  }
+  if (window.__ventanas) {
+    urlVentanas = [...new Set(window.__ventanas.concat(...urlVentanas))]
+  }
+
+  try {
+    urlVentanas.forEach(function (ventana) {
       if (ventana.wait) {
         ventana.waiting = 1
       }
@@ -322,7 +336,6 @@ if (Meteor.isDevelopment) {
 }
 
 window.onpopstate = function (event) {
-  console.log(event)
   const nuevasVentanas = event.state.ventanas
 
   nuevasVentanas.forEach(function (ventana) {
@@ -362,3 +375,47 @@ window.onpopstate = function (event) {
     multi: 1
   })
 }
+
+ventanas.addVentanas = function (nuevasVentanas, eliminar) {
+  nuevasVentanas.forEach(function (ventana) {
+    if (ventana.wait) {
+      ventana.waiting = 1
+    }
+    ventana.onpopstate = 1
+    const _id = ventana._id
+    if (ventanas.find({
+      _id
+    }).count()) {
+      delete ventana._id
+      ventanas.update({
+        _id
+      }, ventana)
+      ventana._id = _id
+    } else {
+      ventanas.insert(ventana)
+    }
+  })
+  if (eliminar) {
+    ventanas.remove({
+      noHistory: {
+        $exists: 0
+      },
+      onpopstate: {
+        $ne: 1
+      }
+    })
+    ventanas.update({
+      onpopstate: 1
+    }, {
+      $unset: {
+        onpopstate: 1
+      }
+    }, {
+      multi: 1
+    })
+  }
+}
+
+Template.registerHelper('ROOT_URL', function () {
+  return window.__meteor_runtime_config__.ROOT_URL
+})
