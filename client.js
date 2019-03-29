@@ -33,6 +33,7 @@ ventanas.createUrl = function (payload) {
  * it updates the url with a base64 bencoded array that contains all the ventanas' documents except of those with noUrl
  * @return {undefined}
  */
+
 ventanas._updateUrl = function (path) {
   path = path || (ventanas.findOne('c', {
     fields: {
@@ -164,7 +165,6 @@ Template._ventanas.onCreated(function () {
       ventana[key] = event.currentTarget.dataset[key]
     })
     ventana.updateUrl = 1
-    console.log(ventana)
     if (ventana._id && ventanas.findOne({
       _id: ventana._id
     })) {

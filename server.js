@@ -34,8 +34,9 @@ export const ventanas = {
 onPageLoad(sink => {
   var match
   var callback
+  const path = sink.request.url.path.split('?')
   urls.some(function (url) {
-    match = url[0].match(sink.request.url.path)
+    match = url[0].match(path[0])
     if (!match) {
       return
     }
@@ -45,5 +46,5 @@ onPageLoad(sink => {
   if (!match) {
     return
   }
-  callback(sink, match, ventanas.readUrl(sink.request.url.path))
+  callback(sink, match, ventanas.readUrl(path[1]))
 })
