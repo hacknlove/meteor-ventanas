@@ -119,7 +119,7 @@ Meteor.startup(function () {
   ventanas.updateUrl()
 })
 
-const initUrl = function () {
+ventanas.initUrl = function () {
   var urlVentanas = []
   try {
     urlVentanas = ventanas.readUrl(global.location.search.substr(1))
@@ -156,7 +156,7 @@ const getId = function getId (data) {
   return Template.currentDate()._id
 }
 
-initUrl()
+ventanas.initUrl()
 
 Template._ventanas.onCreated(function () {
   $('body').on('click', '.openWindow', function (event) {
@@ -337,7 +337,9 @@ if (Meteor.isDevelopment) {
 
 window.onpopstate = function (event) {
   const nuevasVentanas = event.state.ventanas
-
+  if (!nuevasVentanas) {
+    return
+  }
   nuevasVentanas.forEach(function (ventana) {
     if (ventana.wait) {
       ventana.waiting = 1
