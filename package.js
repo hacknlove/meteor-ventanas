@@ -2,7 +2,7 @@
 
 Package.describe({
   name: 'hacknlove:ventanas',
-  version: '1.2.0',
+  version: '1.2.1',
   summary: 'dynamic rendering system backed with mongo, with url persistence',
   git: 'https://github.com/hacknlove/meteor-ventanas',
   documentation: 'README.md'

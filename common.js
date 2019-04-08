@@ -3,19 +3,22 @@ const qs = require('qs')
 
 export function readUrl (url, ventanas) {
   url = qs.parse(url)
-
+  var array = []
+  array.query = url
   if (!url[ventanas.options.query]) {
-    return []
+    return array
   }
   try {
     url = jwt.verify(url[ventanas.options.query], ventanas.options.jwt.key).v
 
-    return Object.keys(url).map(function (_id) {
+    array = Object.keys(url).map(function (_id) {
       url[_id]._id = _id
       return url[_id]
     })
+    array.query = url
+    return array
   } catch (e) {
-    return []
+    return array
   }
 }
 
