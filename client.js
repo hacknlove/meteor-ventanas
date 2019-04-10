@@ -153,7 +153,7 @@ const getId = function getId (data) {
   if (typeof data === 'string') {
     return data
   }
-  return Template.currentDate()._id
+  return Template.currentData()._id
 }
 
 ventanas.initUrl()
