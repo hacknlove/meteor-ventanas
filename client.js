@@ -1,3 +1,5 @@
+/* global location */
+
 /**
  * @file The main module, for clientside
  */
@@ -8,6 +10,7 @@ import { Template } from 'meteor/templating'
 import { Mongo } from 'meteor/mongo'
 import { Meteor } from 'meteor/meteor'
 import { readUrl, createUrl } from './common.js'
+import UrlPaterrn from 'url-pattern'
 
 export const ventanas = new Mongo.Collection(null)
 
@@ -15,6 +18,10 @@ ventanas.options = {
   query: 'v',
   timeout: 350,
   debounce: 500,
+  initUrl: true,
+  notFound () {
+    return true
+  },
   jwt: {
     algorithm: 'none',
     key: undefined
@@ -119,30 +126,6 @@ Meteor.startup(function () {
   ventanas.updateUrl()
 })
 
-ventanas.initUrl = function () {
-  var urlVentanas = []
-  try {
-    urlVentanas = ventanas.readUrl(global.location.search.substr(1))
-  } catch (e) {
-    console.log(e)
-  }
-  if (window.__ventanas) {
-    urlVentanas = [...new Set(window.__ventanas.concat(...urlVentanas))]
-  }
-
-  try {
-    urlVentanas.forEach(function (ventana) {
-      if (ventana.wait) {
-        ventana.waiting = 1
-      }
-      ventanas.insert(ventana)
-    })
-    ventanas.updateUrl()
-  } catch (e) {
-    console.log(e)
-  }
-}
-
 const getId = function getId (data) {
   if (data.data && data.data._id) {
     return data.data._id
@@ -155,8 +138,6 @@ const getId = function getId (data) {
   }
   return Template.currentData()._id
 }
-
-ventanas.initUrl()
 
 Template._ventanas.onCreated(function () {
   $('body').on('click', '.openWindow', function (event) {
@@ -236,7 +217,7 @@ Template._ventana.onDestroyed(function () {
 })
 
 Template._ventana.onRendered(function () {
-  const that = this
+  const ventana = this.$('.ventana')
   const modal = this.$('.fade')
   if (modal.length) {
     modal.addClass('invisible')
@@ -249,29 +230,29 @@ Template._ventana.onRendered(function () {
     ventanas.wait(this)
   }
 
-  this.autorun(function () {
+  this.autorun(() => {
     if (ventanas.findOne({
-      _id: that.data._id,
+      _id: this.data._id,
       close: 1
     })) {
       if (modal.length) {
-        that.$('.fade').removeClass('visible')
+        this.$('.fade').removeClass('visible')
       } else {
         ventanas.remove({
-          _id: that.data._id
+          _id: this.data._id
         })
       }
     }
   })
 
-  this.autorun(function () {
+  this.autorun(() => {
     if (ventanas.findOne({
-      _id: that.data._id,
+      _id: this.data._id,
       waiting: 1
     })) {
-      that.$('.ventana').addClass('waiting')
+      ventana.addClass('waiting')
     } else {
-      that.$('.ventana').removeClass('waiting')
+      ventana.removeClass('waiting')
     }
   })
 })
@@ -286,6 +267,9 @@ Template._ventana.events({
 })
 
 ventanas.error = function (e, opciones) {
+  if (!e) {
+    return
+  }
   ventanas.insert(Object.assign({
     template: 'alerta',
     clase: 'error',
@@ -420,4 +404,53 @@ ventanas.addVentanas = function (nuevasVentanas, eliminar) {
 
 Template.registerHelper('ROOT_URL', function () {
   return window.__meteor_runtime_config__.ROOT_URL
+})
+
+const urls = []
+ventanas.use = function use (url, callback) {
+  urls.push([
+    new UrlPaterrn(url),
+    callback
+  ])
+}
+
+ventanas.initUrl = function () {
+  var match
+  var callback = ventanas.options.notFound
+  urls.some(function (url) {
+    match = url[0].match(location.pathname)
+    if (!match) {
+      return
+    }
+    callback = url[1]
+    return true
+  })
+
+  var urlVentanas = []
+  try {
+    urlVentanas = ventanas.readUrl(global.location.search.substr(1))
+  } catch (e) {
+    console.log(e)
+  }
+  if (window.__ventanas) {
+    urlVentanas = [...new Set(window.__ventanas.concat(...urlVentanas))]
+  }
+  if (!callback(match, urlVentanas)) {
+    return
+  }
+
+  try {
+    urlVentanas.forEach(function (ventana) {
+      if (ventana.wait) {
+        ventana.waiting = 1
+      }
+      ventanas.insert(ventana)
+    })
+    ventanas.updateUrl()
+  } catch (e) {
+    console.log(e)
+  }
+}
+Meteor.startup(function () {
+  ventanas.options.initUrl && ventanas.initUrl()
 })
