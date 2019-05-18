@@ -1,13 +1,13 @@
 import { onPageLoad } from 'meteor/server-render'
 import { readUrl, limpiarUrl, createUrl } from './common.js'
-import UrlPaterrn from 'url-pattern'
+import UrlPatern from 'url-pattern'
 
 const urls = []
 
 export const ventanas = {
   use (url, callback) {
     urls.push([
-      new UrlPaterrn(url),
+      new UrlPatern(url, ventanas.options.urlPaternOptions),
       callback
     ])
   },
@@ -24,6 +24,9 @@ export const ventanas = {
     query: 'v',
     timeout: 350,
     debounce: 500,
+    UrlPaternOptions: {
+      segmentValueCharset: 'a-zA-Z0-9-_~%.'
+    },
     jwt: {
       algorithm: 'none',
       key: undefined

@@ -10,7 +10,7 @@ import { Template } from 'meteor/templating'
 import { Mongo } from 'meteor/mongo'
 import { Meteor } from 'meteor/meteor'
 import { readUrl, createUrl } from './common.js'
-import UrlPaterrn from 'url-pattern'
+import UrlPatern from 'url-pattern'
 
 export const ventanas = new Mongo.Collection(null)
 
@@ -21,6 +21,9 @@ ventanas.options = {
   initUrl: true,
   notFound () {
     return true
+  },
+  urlPaternOptions: {
+    segmentValueCharset: 'a-zA-Z0-9-_~%.'
   },
   jwt: {
     algorithm: 'none',
@@ -145,6 +148,7 @@ Template._ventanas.onCreated(function () {
     Object.keys(event.currentTarget.dataset).forEach(function (key) {
       ventana[key] = event.currentTarget.dataset[key]
     })
+    delete ventana.other
     ventana.updateUrl = 1
     if (ventana._id && ventanas.findOne({
       _id: ventana._id
@@ -258,6 +262,12 @@ Template._ventana.onRendered(function () {
 })
 
 Template._ventana.events({
+  'click .close-other' (event) {
+    if (!event.currentTarget.dataset.other) {
+      return
+    }
+    event.currentTarget.dataset.other.split(' ').forEach(ventanaId => ventanas.close(ventanaId))
+  },
   'click .close' (event, template) {
     ventanas.close(template)
   },
@@ -409,7 +419,7 @@ Template.registerHelper('ROOT_URL', function () {
 const urls = []
 ventanas.use = function use (url, callback) {
   urls.push([
-    new UrlPaterrn(url),
+    new UrlPatern(url, ventanas.options.urlPaternOptions),
     callback
   ])
 }
