@@ -11,6 +11,12 @@ export const ventanas = {
       callback
     ])
   },
+  useRegex (regex, array, callback) {
+    urls.push([
+      new UrlPatern(regex, array, ventanas.options.urlPaternOptions),
+      callback
+    ])
+  },
   createUrl (payload) {
     return createUrl(payload, ventanas)
   },
@@ -24,7 +30,7 @@ export const ventanas = {
     query: 'v',
     timeout: 350,
     debounce: 500,
-    UrlPaternOptions: {
+    urlPaternOptions: {
       segmentValueCharset: 'a-zA-Z0-9-_~%.'
     },
     jwt: {

@@ -423,7 +423,12 @@ ventanas.use = function use (url, callback) {
     callback
   ])
 }
-
+ventanas.useRegex = function (regex, array, callback) {
+  urls.push([
+    new UrlPatern(regex, array, ventanas.options.urlPaternOptions),
+    callback
+  ])
+}
 ventanas.initUrl = function () {
   var match
   var callback = ventanas.options.notFound
