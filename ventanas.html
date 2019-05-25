@@ -1,12 +1,12 @@
 <body>
-  {{> _ventanas}}
+  <div id="ventanas">
+    {{> _ventanas}}
+  </div>
 </body>
 <template name="_ventanas">
-  <div id="ventanas">
-    {{# each m in ventanas}}
-      {{> _ventana m}}
-    {{/each}}
-  </div>
+  {{# each m in ventanas}}
+    {{> _ventana m}}
+  {{/each}}
 </template>
 <template name="_ventana">
   {{> Template.dynamic template=template data=this}}

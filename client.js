@@ -168,19 +168,28 @@ Template._ventanas.onCreated(function () {
 
 Template._ventanas.helpers({
   ventanas () {
+    const data = Template.currentData() || {}
     const $in = Object.keys(Template)
+    var container = data.container || {$exists: 0}
+    if (Array.isArray(container)) {
+      container = {
+        $in: container
+      }
+    }
     if (ventanas.findOne({
       exclusive: {
         $in: [1, '1']
       }
     })) {
       return ventanas.find({
+        _c: container,
         exclusive: {
           $in: [1, '1']
         }
       })
     }
     return ventanas.find({
+      _c: container,
       _id: {
         $ne: 'c'
       },
@@ -213,6 +222,23 @@ Template._ventana.onCreated(function () {
     })
     ventanas.updateUrl()
   }
+})
+Template._ventana.onCreated(function () {
+  const template = Template[this.data._id] || Template[this.data.template]
+  if (!template) {
+    return
+  }
+
+  if (template.__helpers[' containerIs']) {
+    return
+  }
+
+  template.helpers({
+    containerIs (txt) {
+      Template.currentData()
+      return this._c === txt
+    }
+  })
 })
 Template._ventana.onDestroyed(function () {
   if (this.data.close) {
